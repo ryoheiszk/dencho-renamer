@@ -1,9 +1,13 @@
 import tkinter as tk
 from tkinterdnd2 import TkinterDnD, DND_FILES
-from tkcalendar import Calendar
+from tkcalendar import Calendar, DateEntry
 import datetime
 import os
 import json
+
+# pyinstaller用のロケール設定
+import locale
+locale.setlocale(locale.LC_CTYPE, 'ja_JP.UTF-8')
 
 # ファイルパスを保持するためのグローバル変数
 global file_path
@@ -27,7 +31,8 @@ def update_list(event):
 
 def rename_file(selected_date, original_path, document_type, client_name, amount):
     # 日付の取得
-    date_str = selected_date.replace("/", "")
+    # date_str = selected_date.replace("/", "")
+    date_str = selected_date.replace("-", "") # DateEntryのロケール設定関連で修正
 
     # ファイルの拡張子を取得
     _, file_extension = os.path.splitext(original_path)
@@ -58,7 +63,7 @@ def execute_action():
 
     # 選択された情報の取得
     file_name = selected_file_label.cget("text")
-    selected_date = cal.get_date()
+    selected_date = str(cal.get_date())
     selected_document_type = document_type_var.get()
     selected_client = client_list.get(
         tk.ACTIVE) if client_list.get(tk.ACTIVE) else "未選択"
@@ -93,7 +98,7 @@ def main():
     global root, selected_file_label, clients, client_list, cal, amount_entry, tax_var, tax_toggle_var, document_type_var
 
     root = TkinterDnD.Tk()
-    root.title("取引情報入力")
+    root.title("デンチョー・リネーマー")
 
     # ファイル選択部分のフレーム
     frame_file = tk.LabelFrame(root, text="ここにファイルをドロップ", height=100)
@@ -106,8 +111,12 @@ def main():
     frame_calendar = tk.LabelFrame(root, text="日付")
     frame_calendar.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
     today = datetime.date.today()
-    cal = Calendar(frame_calendar, selectmode='day',
-                   year=today.year, month=today.month, day=today.day)
+
+    # cal = Calendar(frame_calendar, selectmode='day',
+    #                year=today.year, month=today.month, day=today.day)
+
+    # Exe化したときにエラーで動かなかったため、こちらでロケール明示
+    cal = DateEntry(frame_calendar, locale='ja_JP', date_pattern='y-mm-dd', width=12)
     cal.pack()
 
     # 取引先名
